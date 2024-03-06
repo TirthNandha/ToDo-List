@@ -36,9 +36,23 @@ app.get("/", async (req, res) => {
     } else{
         res.render("list", {kindOfDay: "Today", newListItems: foundItems})
     }
-
-
 } )
+
+app.post("/delete", function(req, res) {
+    const checkedItemId = req.body.checkbox;
+
+    Item.findByIdAndDelete(checkedItemId)
+        .then(() => {
+            console.log("Item deleted successfully");
+            res.redirect("/")
+        })
+        .catch((err) => {
+            console.log(err);
+            console.log("Error deleting item");
+        });
+});
+
+
 app.post("/", function (req, res) {
         let itemName = req.body.newItem
 
