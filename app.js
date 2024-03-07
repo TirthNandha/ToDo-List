@@ -82,15 +82,25 @@ app.post("/delete", function(req, res) {
 });
 
 
-app.post("/", function (req, res) {
-        let itemName = req.body.newItem
+app.post("/", async function (req, res) {
+    let itemName = req.body.newItem
+    const listName = req.body.list
 
-        const item = new Item ({
-            name: itemName
-        })
-        item.save()
-        res.redirect("/")
+    const item = new Item({
+        name: itemName
     })
+
+    if (listName === "Today") {
+        await item.save()
+        res.redirect("/")
+    } else {
+        const foundList = await List.findOne({ name: listName })
+        foundList.items.push(item)
+        await foundList.save()
+        res.redirect("/" + listName)
+    }
+})
+
 
 app.listen(3000, () => {
     console.log("server is running on port 3000")
