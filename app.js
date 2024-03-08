@@ -8,7 +8,6 @@ require('dotenv').config();
 const app = express()
 app.set('view engine', 'ejs')
 
-const dbUri = process.env.DB_URI;
 
 mongoose.connect(process.env.DB_URI);
 
