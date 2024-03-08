@@ -1,6 +1,7 @@
 const express = require("express")
 const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
+const _ = require("lodash")
 
 const app = express()
 app.set('view engine', 'ejs')
@@ -42,11 +43,11 @@ app.get("/", async (req, res) => {
         Item.insertMany(defaultItems)
         res.redirect("/")
     } else{
-        res.render("list", {kindOfDay: "Today", newListItems: foundItems})
+        res.render("list", {listTitle: "Today", newListItems: foundItems})
     }
 } )
 app.get("/:customListName", async function(req, res) {
-    const customListname = req.params.customListName
+    const customListname = _.capitalize(req.params.customListName)
     try {
         const foundList = await List.findOne({name: customListname})
         if(!foundList){
@@ -57,7 +58,7 @@ app.get("/:customListName", async function(req, res) {
             await list.save()
             res.redirect("/" + customListname)
         } else {
-            res.render("list", {kindOfDay: foundList.name, newListItems: foundList.items})
+            res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
         }
     } catch (err) {
         console.error(err)
@@ -69,16 +70,22 @@ app.get("/:customListName", async function(req, res) {
 
 app.post("/delete", function(req, res) {
     const checkedItemId = req.body.checkbox;
+    const listName = req.body.listName
 
-    Item.findByIdAndDelete(checkedItemId)
-        .then(() => {
-            console.log("Item deleted successfully");
-            res.redirect("/")
-        })
-        .catch((err) => {
-            console.log(err);
-            console.log("Error deleting item");
-        });
+    if(listName === "Today") {
+        Item.findByIdAndDelete(checkedItemId)
+            .then(() => {
+                
+                res.redirect("/")
+            })
+            .catch((err) => {
+                console.log(err);
+                console.log("Error deleting item");
+            });
+    } else {
+        const foundList = List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}})
+        res.redirect("/" + listName)
+    }
 });
 
 
