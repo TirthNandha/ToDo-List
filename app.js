@@ -18,13 +18,13 @@ const itemsSchema = new mongoose.Schema({
 const Item = mongoose.model("Item", itemsSchema)
 
 const item1 = new Item({
-    name: "Hello"
+    name: "Welcome to Todo List"
 })
 const item2 = new Item({
-    name: "Hiee"
+    name: "Add item by clicking the + icon"
 })
 const item3 = new Item({
-    name: "Byee"
+    name: "<- delete item by checking this."
 })
 
 const defaultItems = [item1, item2, item3]
@@ -71,22 +71,15 @@ app.get("/:customListName", async function(req, res) {
 })
 
 
-app.post("/delete", function(req, res) {
+app.post("/delete", async function(req, res) {
     const checkedItemId = req.body.checkbox;
     const listName = req.body.listName
 
     if(listName === "Today") {
-        Item.findByIdAndDelete(checkedItemId)
-            .then(() => {
-                
-                res.redirect("/")
-            })
-            .catch((err) => {
-                console.log(err);
-                console.log("Error deleting item");
-            });
+        await Item.findByIdAndDelete(checkedItemId)
+        res.redirect("/")
     } else {
-        const foundList = List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}})
+        const foundList = await List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}})
         res.redirect("/" + listName)
     }
 });
